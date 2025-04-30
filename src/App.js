@@ -4,6 +4,8 @@ import dataProvider from "./dataProvider";
 import UserList from "./List/UserList";
 import PostList from "./List/PostList";
 import ReportList from "./List/ReportList";
+import { UserinfoEdit } from "./Edit/UserinfoEdit";
+import PostEdit from "./Edit/PostEdit";
 
 function App() {
   return (
@@ -11,9 +13,15 @@ function App() {
       <Resource
         name="userInfo"
         list={UserList}
+        edit={UserinfoEdit}
         options={{ label: "User List" }}
       />
-      <Resource name="posts" list={PostList} options={{ label: "Posts" }} />
+      <Resource
+        name="posts"
+        list={PostList}
+        edit={PostEdit}
+        options={{ label: "Posts" }}
+      />
       <Resource
         name="reports"
         list={ReportList}

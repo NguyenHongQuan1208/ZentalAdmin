@@ -19,13 +19,17 @@ const dataProvider = {
 
   getOne: async (resource, { id }) => {
     const snapshot = await get(ref(db, `${resource}/${id}`));
+    const data = snapshot.val();
+    if (!data) {
+      throw new Error(`No data found for id ${id}`);
+    }
     return {
-      data: { id, ...snapshot.val() },
+      data: { id, ...data },
     };
   },
 
   create: async (resource, { data }) => {
-    const id = data.uid || Date.now().toString();
+    const id = data.uid || Date.now().toString(); // Sử dụng uid nếu có, nếu không, tạo id mới
     await set(ref(db, `${resource}/${id}`), data);
     return { data: { id, ...data } };
   },

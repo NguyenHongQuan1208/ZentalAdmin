@@ -13,10 +13,11 @@ const ReportList = (props) => {
   return (
     <List {...props}>
       <Datagrid>
-        <ReferenceField source="postId" reference="posts" />
-        <TextField source="reason" />
-        <DateField source="timestamp" />
-        <TextField source="repporterId" label="Reporter Id" />
+        <ReferenceField source="postId" reference="posts" label="Post" />
+        <TextField source="reason" label="Reason" />
+        <DateField source="timestamp" label="Timestamp" />
+        <TextField source="repporterId" label="Reporter ID" />
+        <TextField source="isViewed" label="Viewed" />
         <EditButton />
         <DeleteButton />
       </Datagrid>

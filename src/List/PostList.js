@@ -13,14 +13,15 @@ const PostList = (props) => {
   return (
     <List {...props}>
       <Datagrid>
-        <TextField source="id" />
-        <TextField source="title" />
-        <TextField source="content" />
-        <DateField source="createdAt" />
-        <DateField source="updatedAt" />
-        <TextField source="uid" />
-        <TextField source="status" />
-        <ImageField source="imageUri" title="image" />
+        <TextField source="id" label="ID" />
+        <TextField source="sectionId" label="Section ID" />
+        <TextField source="title" label="Title" />
+        <TextField source="content" label="Content" />
+        <DateField source="createdAt" label="Created At" />
+        <DateField source="updatedAt" label="Updated At" />
+        <TextField source="uid" label="Created by" />
+        <TextField source="status" label="Status" />
+        <ImageField source="imageUri" title="Image" label="Image" />
         <EditButton />
         <DeleteButton />
       </Datagrid>
