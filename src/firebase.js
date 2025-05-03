@@ -3,10 +3,13 @@ import {
   getDatabase,
   ref,
   get,
-  child,
   set,
   update,
   remove,
+  query,
+  orderByChild,
+  startAt,
+  endAt,
 } from "firebase/database";
 
 const firebaseConfig = {
@@ -25,4 +28,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-export { db, ref, get, child, set, update, remove };
+export {
+  db,
+  ref,
+  get,
+  set,
+  update,
+  remove,
+  query,
+  orderByChild,
+  startAt,
+  endAt,
+};

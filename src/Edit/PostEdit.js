@@ -24,7 +24,7 @@ const PostEdit = (props) => (
         <ImageField source="imageUri" title="title" />
       </ImageInput>
 
-      <TextInput source="sectionId" />
+      <TextInput source="sectionId" disabled />
       <SelectInput
         source="publicStatus"
         choices={[

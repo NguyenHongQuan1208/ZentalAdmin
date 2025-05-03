@@ -4,13 +4,16 @@ import {
   Datagrid,
   TextField,
   EmailField,
-  ImageField,
   EditButton,
   DeleteButton,
   SearchInput,
   Filter,
+  FunctionField,
+  SelectInput,
+  TextInput,
 } from "react-admin";
 import { styled } from "@mui/material/styles";
+import { Chip, Avatar } from "@mui/material";
 
 const StyledDatagrid = styled(Datagrid)(({ theme }) => ({
   "& .RaDatagrid-row": {
@@ -19,10 +22,16 @@ const StyledDatagrid = styled(Datagrid)(({ theme }) => ({
       verticalAlign: "middle",
     },
   },
+  "& .column-avatar": {
+    width: "120px",
+  },
 }));
 
 const ImageCell = styled("div")({
-  width: "100px",
+  width: "80px",
+  height: "80px",
+  borderRadius: "50%",
+  overflow: "hidden",
   "& img": {
     objectFit: "cover",
     width: "100%",
@@ -30,40 +39,83 @@ const ImageCell = styled("div")({
   },
 });
 
-const EmptyImagePlaceholder = styled("div")(({ theme }) => ({
-  width: "100px",
-  height: "100px",
+const EmptyImagePlaceholder = styled(Avatar)(({ theme }) => ({
+  width: "80px",
+  height: "80px",
   backgroundColor: theme.palette.grey[200],
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
   color: theme.palette.text.secondary,
 }));
 
-// Custom Filter Component with SearchInput
+const UserStatus = styled(Chip)(({ theme, active }) => ({
+  fontWeight: "bold",
+  backgroundColor: active
+    ? theme.palette.success.light
+    : theme.palette.error.light,
+}));
+
 const UserFilter = (props) => (
   <Filter {...props}>
-    <SearchInput source="q" alwaysOn placeholder="Search Users..." />
+    <SearchInput
+      source="q"
+      alwaysOn
+      placeholder="Search by id, name, email,..."
+      fullWidth
+    />
+    <TextInput
+      label="Username"
+      source="username"
+      placeholder="Filter by username"
+    />
+    <TextInput label="Email" source="email" placeholder="Filter by email" />
+    <SelectInput
+      label="Status"
+      source="isActive"
+      choices={[
+        { id: true, name: "Active" },
+        { id: false, name: "Inactive" },
+      ]}
+    />
   </Filter>
 );
 
 const UserList = () => {
   return (
-    <List filters={<UserFilter />}>
-      <StyledDatagrid>
+    <List filters={<UserFilter />} perPage={25}>
+      <StyledDatagrid rowClick="edit" optimized>
         <TextField source="id" label="ID" />
-        <TextField source="username" label="User Name" />
-        <EmailField source="email" label="Email" />
-        <TextField source="bio" label="Biography" />
-        <ImageField
-          source="photoUrl"
-          title="username"
-          label="Profile Picture"
-          cellClassName={ImageCell}
-          empty={<EmptyImagePlaceholder>No Image</EmptyImagePlaceholder>}
+        <FunctionField
+          label="Avatar"
+          render={(record) =>
+            record.photoUrl ? (
+              <ImageCell>
+                <img src={record.photoUrl} alt={record.username} />
+              </ImageCell>
+            ) : (
+              <EmptyImagePlaceholder>
+                {record.username?.charAt(0)?.toUpperCase() || "?"}
+              </EmptyImagePlaceholder>
+            )
+          }
+          className="column-avatar"
         />
+
+        <TextField source="username" label="Username" />
+        <EmailField source="email" label="Email" />
+
+        <FunctionField
+          label="Status"
+          render={(record) => (
+            <UserStatus
+              label={record.isActive ? "Active" : "Inactive"}
+              active={record.isActive}
+            />
+          )}
+        />
+
+        <TextField source="bio" label="Bio" ellipsis cellClassName="bio-cell" />
+
         <EditButton />
-        <DeleteButton />
+        <DeleteButton mutationMode="pessimistic" />
       </StyledDatagrid>
     </List>
   );
