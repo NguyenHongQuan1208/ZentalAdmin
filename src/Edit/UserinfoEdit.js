@@ -10,8 +10,20 @@ import {
 } from "react-admin";
 import { Box, Typography, Divider } from "@mui/material";
 
-export const UserinfoEdit = () => (
-  <Edit title="Edit User Information">
+const UserinfoEdit = () => (
+  <Edit
+    title="Edit User Information"
+    transform={(data) => {
+      console.log("Data being sent for update:", data);
+      // Ensure id is not undefined; if it is, you might need to handle it
+      if (!data.id) {
+        console.warn("ID is undefined in form data!");
+        // Optionally, remove id from the payload if it's not needed for update
+        delete data.id;
+      }
+      return data;
+    }}
+  >
     <SimpleForm>
       {/* Personal Information Section */}
       <Box sx={{ marginBottom: 3, width: "100%", maxWidth: "800px" }}>
@@ -93,9 +105,9 @@ export const UserinfoEdit = () => (
             </Typography>
             <ImageInput
               source="photoUrl"
-              label={false} // Hide default label to use custom Typography
+              label={false}
               accept="image/*"
-              maxSize={5000000} // Limit to 5MB
+              maxSize={5000000}
               helperText="Upload a new profile picture (Max size: 5MB, Format: JPG, PNG)"
             >
               <ImageField
@@ -117,3 +129,5 @@ export const UserinfoEdit = () => (
     </SimpleForm>
   </Edit>
 );
+
+export default UserinfoEdit;

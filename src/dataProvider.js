@@ -96,26 +96,51 @@ const dataProvider = {
     }
   },
 
-  // Other methods remain unchanged
   getOne: async (resource, { id }) => {
-    const snapshot = await get(ref(db, `${resource}/${id}`));
-    return { data: { id, ...snapshot.val() } };
+    try {
+      const snapshot = await get(ref(db, `${resource}/${id}`));
+      const data = { id, ...snapshot.val() };
+      console.log(`getOne(${resource}, ${id}) data:`, data);
+      return { data };
+    } catch (error) {
+      console.error(`Error in getOne(${resource}, ${id}):`, error);
+      throw error;
+    }
   },
 
   create: async (resource, { data }) => {
-    const id = data.id || Date.now().toString();
-    await set(ref(db, `${resource}/${id}`), data);
-    return { data: { id, ...data } };
+    try {
+      const id = data.id || Date.now().toString();
+      await set(ref(db, `${resource}/${id}`), data);
+      return { data: { id, ...data } };
+    } catch (error) {
+      console.error(`Error in create(${resource}):`, error);
+      throw error;
+    }
   },
 
   update: async (resource, { id, data }) => {
-    await update(ref(db, `${resource}/${id}`), data);
-    return { data: { id, ...data } };
+    try {
+      console.log(`Updating ${resource}/${id} with data:`, data);
+      // Remove 'id' from the data payload to prevent Firebase update issues
+      const { id: _, ...updateData } = data;
+      await update(ref(db, `${resource}/${id}`), updateData);
+      console.log(`Successfully updated ${resource}/${id}`);
+      return { data: { id, ...updateData } };
+    } catch (error) {
+      console.error(`Error updating ${resource}/${id}:`, error);
+      throw new Error(`Failed to update ${resource}: ${error.message}`);
+    }
   },
 
   delete: async (resource, { id }) => {
-    await remove(ref(db, `${resource}/${id}`));
-    return { data: { id } };
+    try {
+      await remove(ref(db, `${resource}/${id}`));
+      return { data: { id } };
+    } catch (error) {
+      console.error(`Error deleting ${resource}/${id}:`, error);
+      throw error;
+    }
   },
 };
 
@@ -164,43 +189,53 @@ function paginateAndSort(data, params) {
 
 // Define the missing functions to resolve no-undef errors
 async function handleChatList(params) {
-  const { userId } = params.filter;
-  if (!userId) throw new Error("Missing userId for chatlist");
+  try {
+    const { userId } = params.filter;
+    if (!userId) throw new Error("Missing userId for chatlist");
 
-  const snapshot = await get(ref(db, `chatlist/${userId}`));
-  const chats = convertSnapshotToArray(snapshot);
+    const snapshot = await get(ref(db, `chatlist/${userId}`));
+    const chats = convertSnapshotToArray(snapshot);
 
-  const enrichedChats = await Promise.all(
-    chats.map(async (chat) => {
-      const userSnapshot = await get(ref(db, `userInfo/${chat.id}`));
-      return {
-        ...chat,
-        partnerInfo: userSnapshot.val() || {},
-      };
-    })
-  );
+    const enrichedChats = await Promise.all(
+      chats.map(async (chat) => {
+        const userSnapshot = await get(ref(db, `userInfo/${chat.id}`));
+        return {
+          ...chat,
+          partnerInfo: userSnapshot.val() || {},
+        };
+      })
+    );
 
-  return paginateAndSort(enrichedChats, params);
+    return paginateAndSort(enrichedChats, params);
+  } catch (error) {
+    console.error("Error in handleChatList:", error);
+    throw error;
+  }
 }
 
 async function handleComments(params) {
-  const { postId } = params.filter;
-  if (!postId) throw new Error("Missing postId for comments");
+  try {
+    const { postId } = params.filter;
+    if (!postId) throw new Error("Missing postId for comments");
 
-  const snapshot = await get(ref(db, `comments/${postId}`));
-  const comments = convertSnapshotToArray(snapshot);
+    const snapshot = await get(ref(db, `comments/${postId}`));
+    const comments = convertSnapshotToArray(snapshot);
 
-  const enrichedComments = await Promise.all(
-    comments.map(async (comment) => {
-      const userSnapshot = await get(ref(db, `userInfo/${comment.userId}`));
-      return {
-        ...comment,
-        userInfo: userSnapshot.val() || {},
-      };
-    })
-  );
+    const enrichedComments = await Promise.all(
+      comments.map(async (comment) => {
+        const userSnapshot = await get(ref(db, `userInfo/${comment.userId}`));
+        return {
+          ...comment,
+          userInfo: userSnapshot.val() || {},
+        };
+      })
+    );
 
-  return paginateAndSort(enrichedComments, params);
+    return paginateAndSort(enrichedComments, params);
+  } catch (error) {
+    console.error("Error in handleComments:", error);
+    throw error;
+  }
 }
 
 export default dataProvider;

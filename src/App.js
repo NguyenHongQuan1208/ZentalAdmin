@@ -4,7 +4,7 @@ import dataProvider from "./dataProvider";
 import UserList from "./List/UserList";
 import PostList from "./List/PostList";
 import ReportList from "./List/ReportList";
-import { UserinfoEdit } from "./Edit/UserinfoEdit";
+import UserinfoEdit from "./Edit/UserinfoEdit";
 import PostEdit from "./Edit/PostEdit";
 
 function App() {
