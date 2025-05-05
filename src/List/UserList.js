@@ -9,11 +9,10 @@ import {
   SearchInput,
   Filter,
   FunctionField,
-  SelectInput,
   TextInput,
 } from "react-admin";
 import { styled } from "@mui/material/styles";
-import { Chip, Avatar } from "@mui/material";
+import { Avatar } from "@mui/material";
 
 const StyledDatagrid = styled(Datagrid)(({ theme }) => ({
   "& .RaDatagrid-row": {
@@ -46,13 +45,6 @@ const EmptyImagePlaceholder = styled(Avatar)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-const UserStatus = styled(Chip)(({ theme, active }) => ({
-  fontWeight: "bold",
-  backgroundColor: active
-    ? theme.palette.success.light
-    : theme.palette.error.light,
-}));
-
 const UserFilter = (props) => (
   <Filter {...props}>
     <SearchInput
@@ -67,14 +59,6 @@ const UserFilter = (props) => (
       placeholder="Filter by username"
     />
     <TextInput label="Email" source="email" placeholder="Filter by email" />
-    <SelectInput
-      label="Status"
-      source="isActive"
-      choices={[
-        { id: true, name: "Active" },
-        { id: false, name: "Inactive" },
-      ]}
-    />
   </Filter>
 );
 
@@ -101,16 +85,6 @@ const UserList = () => {
 
         <TextField source="username" label="Username" />
         <EmailField source="email" label="Email" />
-
-        <FunctionField
-          label="Status"
-          render={(record) => (
-            <UserStatus
-              label={record.isActive ? "Active" : "Inactive"}
-              active={record.isActive}
-            />
-          )}
-        />
 
         <TextField source="bio" label="Bio" ellipsis cellClassName="bio-cell" />
 

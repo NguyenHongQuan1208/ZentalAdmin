@@ -73,6 +73,16 @@ const dataProvider = {
               (item) => item.sectionId === params.filter.sectionId
             );
           }
+
+          // Add filter for uid (Created by)
+          if (params.filter.uid) {
+            const uidFilter = params.filter.uid.toLowerCase();
+            data = data.filter((item) =>
+              String(item.uid || "")
+                .toLowerCase()
+                .includes(uidFilter)
+            );
+          }
         }
       }
 
@@ -205,7 +215,7 @@ function getSearchableFields(resource) {
       clientSide: ["id", "username", "email"],
     },
     posts: {
-      clientSide: ["id", "title", "content", "sectionId"],
+      clientSide: ["id", "title", "content", "sectionId", "uid"], // Added uid for general search
     },
   };
   return fieldsMap[resource] || { clientSide: [] };

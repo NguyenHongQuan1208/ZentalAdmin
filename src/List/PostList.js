@@ -16,7 +16,8 @@ import {
 // Custom filter component for the list
 const PostFilter = (props) => (
   <Filter {...props}>
-    <TextInput label="Search Title" source="title" alwaysOn />
+    <TextInput label="Search" source="q" alwaysOn />
+    <TextInput label="Created by (UID)" source="uid" />
     <SelectInput
       label="Status"
       source="status"
@@ -50,7 +51,6 @@ const PostList = (props) => {
           source="content"
           label="Content"
           sortable={false}
-          // Truncate long content
           format={(value) =>
             value.length > 100 ? `${value.substring(0, 100)}...` : value
           }
@@ -63,7 +63,7 @@ const PostList = (props) => {
           source="status"
           label="Status"
           sortable={true}
-          render={(value) => (value.status === 1 ? "Done" : "Todo")}
+          render={(record) => (record.status === 1 ? "Done" : "Todo")}
         />
         <ImageField
           source="imageUri"
