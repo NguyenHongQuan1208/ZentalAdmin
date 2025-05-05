@@ -1,9 +1,9 @@
 import { db, ref, get, set, update, remove } from "./firebase";
+import { supabase } from "./supabaseClient";
 
 const dataProvider = {
   getList: async (resource, params) => {
     try {
-      // Handle special resources
       if (resource === "chatlist") {
         return handleChatList(params);
       }
@@ -11,13 +11,10 @@ const dataProvider = {
         return handleComments(params);
       }
 
-      // Fetch all data for the resource
       const snapshot = await get(ref(db, resource));
       let data = convertSnapshotToArray(snapshot);
 
-      // Apply client-side filtering based on filter parameters
       if (params.filter) {
-        // Handle general search filter (q)
         if (params.filter.q) {
           const searchTerm = params.filter.q.toLowerCase();
           const searchableFields = getSearchableFields(resource);
@@ -31,9 +28,7 @@ const dataProvider = {
           );
         }
 
-        // Handle specific filters for users/userInfo
         if (resource === "users" || resource === "userInfo") {
-          // Filter by username if provided
           if (params.filter.username) {
             const usernameFilter = params.filter.username.toLowerCase();
             data = data.filter((item) =>
@@ -43,7 +38,6 @@ const dataProvider = {
             );
           }
 
-          // Filter by email if provided
           if (params.filter.email) {
             const emailFilter = params.filter.email.toLowerCase();
             data = data.filter((item) =>
@@ -53,7 +47,6 @@ const dataProvider = {
             );
           }
 
-          // Filter by isActive if provided
           if (params.filter.isActive !== undefined) {
             data = data.filter(
               (item) => item.isActive === params.filter.isActive
@@ -61,9 +54,7 @@ const dataProvider = {
           }
         }
 
-        // Handle specific filters for posts
         if (resource === "posts") {
-          // Filter by title if provided
           if (params.filter.title) {
             const titleFilter = params.filter.title.toLowerCase();
             data = data.filter((item) =>
@@ -73,13 +64,10 @@ const dataProvider = {
             );
           }
 
-          // Filter by status if provided
           if (params.filter.status !== undefined) {
-            // status is a number (1 for Done, 0 for Todo)
             data = data.filter((item) => item.status === params.filter.status);
           }
 
-          // Filter by sectionId if provided
           if (params.filter.sectionId) {
             data = data.filter(
               (item) => item.sectionId === params.filter.sectionId
@@ -88,7 +76,6 @@ const dataProvider = {
         }
       }
 
-      // Apply sorting and pagination
       return paginateAndSort(data, params);
     } catch (error) {
       console.error(`Error in getList(${resource}):`, error);
@@ -111,6 +98,39 @@ const dataProvider = {
   create: async (resource, { data }) => {
     try {
       const id = data.id || Date.now().toString();
+
+      if (data.photoUrl && data.photoUrl.rawFile) {
+        try {
+          const filePath = `profile_photos/${id}_${Date.now()}.jpg`;
+          const file = data.photoUrl.rawFile;
+
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("ZentalApp")
+            .upload(filePath, file);
+
+          if (uploadError) {
+            console.error("Upload error:", uploadError.message);
+            throw new Error("Failed to upload profile picture");
+          }
+
+          const { data: publicData, error: publicError } = supabase.storage
+            .from("ZentalApp")
+            .getPublicUrl(filePath);
+
+          if (publicError) {
+            console.error("Public URL error:", publicError.message);
+            throw new Error("Failed to get public URL for profile picture");
+          }
+
+          data.photoUrl = publicData.publicUrl;
+        } catch (error) {
+          console.error("Error handling photo upload:", error);
+          throw error;
+        }
+      } else if (data.photoUrl && typeof data.photoUrl === "object") {
+        data.photoUrl = data.photoUrl.src || data.photoUrl.url || "";
+      }
+
       await set(ref(db, `${resource}/${id}`), data);
       return { data: { id, ...data } };
     } catch (error) {
@@ -122,7 +142,39 @@ const dataProvider = {
   update: async (resource, { id, data }) => {
     try {
       console.log(`Updating ${resource}/${id} with data:`, data);
-      // Remove 'id' from the data payload to prevent Firebase update issues
+
+      if (data.photoUrl && data.photoUrl.rawFile) {
+        try {
+          const filePath = `profile_photos/${id}_${Date.now()}.jpg`;
+          const file = data.photoUrl.rawFile;
+
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("ZentalApp")
+            .upload(filePath, file);
+
+          if (uploadError) {
+            console.error("Upload error:", uploadError.message);
+            throw new Error("Failed to upload profile picture");
+          }
+
+          const { data: publicData, error: publicError } = supabase.storage
+            .from("ZentalApp")
+            .getPublicUrl(filePath);
+
+          if (publicError) {
+            console.error("Public URL error:", publicError.message);
+            throw new Error("Failed to get public URL for profile picture");
+          }
+
+          data.photoUrl = publicData.publicUrl;
+        } catch (error) {
+          console.error("Error handling photo upload:", error);
+          throw error;
+        }
+      } else if (data.photoUrl && typeof data.photoUrl === "object") {
+        data.photoUrl = data.photoUrl.src || data.photoUrl.url || "";
+      }
+
       const { id: _, ...updateData } = data;
       await update(ref(db, `${resource}/${id}`), updateData);
       console.log(`Successfully updated ${resource}/${id}`);
@@ -144,7 +196,6 @@ const dataProvider = {
   },
 };
 
-// Helper functions
 function getSearchableFields(resource) {
   const fieldsMap = {
     userInfo: {
@@ -187,7 +238,6 @@ function paginateAndSort(data, params) {
   };
 }
 
-// Define the missing functions to resolve no-undef errors
 async function handleChatList(params) {
   try {
     const { userId } = params.filter;

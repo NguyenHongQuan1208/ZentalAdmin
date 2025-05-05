@@ -15,17 +15,16 @@ const UserinfoEdit = () => (
     title="Edit User Information"
     transform={(data) => {
       console.log("Data being sent for update:", data);
-      // Ensure id is not undefined; if it is, you might need to handle it
+
       if (!data.id) {
         console.warn("ID is undefined in form data!");
-        // Optionally, remove id from the payload if it's not needed for update
         delete data.id;
       }
+
       return data;
     }}
   >
     <SimpleForm>
-      {/* Personal Information Section */}
       <Box sx={{ marginBottom: 3, width: "100%", maxWidth: "800px" }}>
         <Typography variant="h6" gutterBottom>
           Personal Information
@@ -62,7 +61,6 @@ const UserinfoEdit = () => (
         </Box>
       </Box>
 
-      {/* Profile Picture Section */}
       <Box sx={{ marginBottom: 3, width: "100%", maxWidth: "800px" }}>
         <Typography variant="h6" gutterBottom>
           Profile Picture
@@ -77,7 +75,6 @@ const UserinfoEdit = () => (
             alignItems: "center",
           }}
         >
-          {/* Display Current Profile Picture */}
           <Box sx={{ flex: "1 1 30%", minWidth: "150px" }}>
             <Typography variant="subtitle1" gutterBottom>
               Current Picture
@@ -98,7 +95,6 @@ const UserinfoEdit = () => (
             />
           </Box>
 
-          {/* Upload New Profile Picture */}
           <Box sx={{ flex: "1 1 60%", minWidth: "200px" }}>
             <Typography variant="subtitle1" gutterBottom>
               Upload New Picture
