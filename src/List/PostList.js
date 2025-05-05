@@ -16,7 +16,7 @@ import {
 // Custom filter component for the list
 const PostFilter = (props) => (
   <Filter {...props}>
-    <TextInput label="Search" source="q" alwaysOn />
+    <TextInput label="Search" source="q" placeholder="Search by uid, title" alwaysOn />
     <TextInput label="Created by (UID)" source="uid" />
     <SelectInput
       label="Status"
@@ -70,7 +70,7 @@ const PostList = (props) => {
           title="Image"
           label="Image"
           sx={{
-            "& img": { maxWidth: 50, maxHeight: 50, objectFit: "contain" },
+            "& img": { maxWidth: 150, maxHeight: 150, objectFit: "contain" }, // Increased size
           }}
         />
         <EditButton />

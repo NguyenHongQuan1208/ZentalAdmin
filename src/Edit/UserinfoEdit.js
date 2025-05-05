@@ -15,88 +15,106 @@ const UserinfoEdit = () => (
     title="Edit User Information"
     transform={(data) => {
       console.log("Data being sent for update:", data);
-
       if (!data.id) {
         console.warn("ID is undefined in form data!");
         delete data.id;
       }
-
       return data;
     }}
   >
     <SimpleForm>
-      <Box sx={{ marginBottom: 3, width: "100%", maxWidth: "800px" }}>
-        <Typography variant="h6" gutterBottom>
+      {/* Phần thông tin cá nhân - Tối ưu hóa không gian */}
+      <Box sx={{
+        marginBottom: 4,
+        width: "100%",
+        maxWidth: "800px",
+        "& .RaTextInput-root": { marginBottom: 2 }
+      }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
           Personal Information
         </Typography>
-        <Divider sx={{ marginBottom: 2 }} />
+        <Divider sx={{ marginBottom: 3 }} />
 
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
           <TextInput
             source="id"
             disabled
             label="User ID"
-            sx={{ flex: "1 1 45%" }}
+            sx={{ flex: "1 1 100%" }}
           />
           <TextInput
             source="username"
             label="Username"
             validate={[required()]}
-            sx={{ flex: "1 1 45%" }}
+            sx={{ flex: "1 1 45%", minWidth: 250 }}
           />
           <TextInput
             source="email"
             label="Email"
             validate={[required(), email()]}
-            sx={{ flex: "1 1 100%" }}
+            sx={{ flex: "1 1 45%", minWidth: 250 }}
           />
           <TextInput
             source="bio"
             label="Biography"
             multiline
             rows={4}
+            fullWidth
             helperText="A short description about the user"
-            sx={{ flex: "1 1 100%" }}
           />
         </Box>
       </Box>
 
-      <Box sx={{ marginBottom: 3, width: "100%", maxWidth: "800px" }}>
-        <Typography variant="h6" gutterBottom>
+      {/* Phần ảnh đại diện - Cải thiện visual hierarchy */}
+      <Box sx={{
+        marginBottom: 4,
+        width: "100%",
+        maxWidth: "800px",
+        backgroundColor: "rgba(0, 0, 0, 0.02)",
+        p: 3,
+        borderRadius: 1
+      }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
           Profile Picture
         </Typography>
-        <Divider sx={{ marginBottom: 2 }} />
+        <Divider sx={{ marginBottom: 3 }} />
 
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 3,
-            alignItems: "center",
-          }}
-        >
-          <Box sx={{ flex: "1 1 30%", minWidth: "150px" }}>
-            <Typography variant="subtitle1" gutterBottom>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+          <Box sx={{
+            flex: "1 1 30%",
+            minWidth: 200,
+            textAlign: "center"
+          }}>
+            <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
               Current Picture
             </Typography>
             <ImageField
               source="photoUrl"
               title="Profile Picture"
-              emptyText="No profile picture set"
+              emptyText="No image"
               sx={{
                 "& img": {
-                  maxWidth: "120px",
-                  maxHeight: "120px",
+                  width: 150,
+                  height: 150,
                   borderRadius: "50%",
                   objectFit: "cover",
-                  border: "1px solid #e0e0e0",
+                  border: "2px solid #e0e0e0",
                 },
               }}
             />
           </Box>
 
-          <Box sx={{ flex: "1 1 60%", minWidth: "200px" }}>
-            <Typography variant="subtitle1" gutterBottom>
+          <Box sx={{
+            flex: "1 1 60%",
+            minWidth: 300,
+            "& .RaImageInput-dropZone": {
+              border: "2px dashed #e0e0e0",
+              borderRadius: 1,
+              p: 3,
+              textAlign: "center"
+            }
+          }}>
+            <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
               Upload New Picture
             </Typography>
             <ImageInput
@@ -104,15 +122,15 @@ const UserinfoEdit = () => (
               label={false}
               accept="image/*"
               maxSize={5000000}
-              helperText="Upload a new profile picture (Max size: 5MB, Format: JPG, PNG)"
+              helperText="Max size: 5MB (JPG, PNG)"
             >
               <ImageField
                 source="src"
                 title="title"
                 sx={{
                   "& img": {
-                    maxWidth: "100px",
-                    maxHeight: "100px",
+                    width: 120,
+                    height: 120,
                     borderRadius: "50%",
                     objectFit: "cover",
                   },

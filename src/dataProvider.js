@@ -97,6 +97,10 @@ const dataProvider = {
     try {
       const snapshot = await get(ref(db, `${resource}/${id}`));
       const data = { id, ...snapshot.val() };
+      // Set default value if sectionId is missing or null
+      if (data.sectionId === undefined || data.sectionId === null) {
+        data.sectionId = ""; // or some default value
+      }
       console.log(`getOne(${resource}, ${id}) data:`, data);
       return { data };
     } catch (error) {
@@ -104,6 +108,7 @@ const dataProvider = {
       throw error;
     }
   },
+
 
   create: async (resource, { data }) => {
     try {
@@ -153,10 +158,12 @@ const dataProvider = {
     try {
       console.log(`Updating ${resource}/${id} with data:`, data);
 
-      if (data.photoUrl && data.photoUrl.rawFile) {
+      // Handle image upload for posts (imageUri) or user profiles (photoUrl)
+      const imageField = resource === "posts" ? "imageUri" : "photoUrl";
+      if (data[imageField] && data[imageField].rawFile) {
         try {
-          const filePath = `profile_photos/${id}_${Date.now()}.jpg`;
-          const file = data.photoUrl.rawFile;
+          const filePath = `${resource === "posts" ? "post_images" : "profile_photos"}/${id}_${Date.now()}.jpg`;
+          const file = data[imageField].rawFile;
 
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from("ZentalApp")
@@ -164,7 +171,7 @@ const dataProvider = {
 
           if (uploadError) {
             console.error("Upload error:", uploadError.message);
-            throw new Error("Failed to upload profile picture");
+            throw new Error("Failed to upload image");
           }
 
           const { data: publicData, error: publicError } = supabase.storage
@@ -173,27 +180,37 @@ const dataProvider = {
 
           if (publicError) {
             console.error("Public URL error:", publicError.message);
-            throw new Error("Failed to get public URL for profile picture");
+            throw new Error("Failed to get public URL for image");
           }
 
-          data.photoUrl = publicData.publicUrl;
+          data[imageField] = publicData.publicUrl;
         } catch (error) {
-          console.error("Error handling photo upload:", error);
+          console.error("Error handling image upload:", error);
           throw error;
         }
-      } else if (data.photoUrl && typeof data.photoUrl === "object") {
-        data.photoUrl = data.photoUrl.src || data.photoUrl.url || "";
+      } else if (data[imageField] && typeof data[imageField] === "object") {
+        data[imageField] = data[imageField].src || data[imageField].url || "";
       }
 
+      // Remove id from data and filter out undefined values
       const { id: _, ...updateData } = data;
-      await update(ref(db, `${resource}/${id}`), updateData);
+      // Create a new object with only defined values
+      const cleanedUpdateData = {};
+      Object.keys(updateData).forEach((key) => {
+        if (updateData[key] !== undefined) {
+          cleanedUpdateData[key] = updateData[key];
+        }
+      });
+
+      await update(ref(db, `${resource}/${id}`), cleanedUpdateData);
       console.log(`Successfully updated ${resource}/${id}`);
-      return { data: { id, ...updateData } };
+      return { data: { id, ...cleanedUpdateData } };
     } catch (error) {
       console.error(`Error updating ${resource}/${id}:`, error);
       throw new Error(`Failed to update ${resource}: ${error.message}`);
     }
   },
+
 
   delete: async (resource, { id }) => {
     try {
