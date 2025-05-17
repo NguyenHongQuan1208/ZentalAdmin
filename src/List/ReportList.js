@@ -4,7 +4,6 @@ import {
   Datagrid,
   TextField,
   DateField,
-  ReferenceField,
   EditButton,
   DeleteButton,
 } from "react-admin";
@@ -13,10 +12,11 @@ const ReportList = (props) => {
   return (
     <List {...props}>
       <Datagrid>
-        <ReferenceField source="postId" reference="posts" label="Post" />
+        <TextField source="postId" label="Post ID" />
         <TextField source="reason" label="Reason" />
         <DateField source="timestamp" label="Timestamp" />
-        <TextField source="repporterId" label="Reporter ID" />
+        <TextField source="reporterId" label="Reporter ID" />
+        <TextField source="reporterUsername" label="Reporter" />
         <TextField source="isViewed" label="Viewed" />
         <EditButton />
         <DeleteButton />

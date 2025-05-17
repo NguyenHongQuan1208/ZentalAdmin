@@ -11,6 +11,40 @@ const dataProvider = {
         return handleComments(params);
       }
 
+      if (resource === "reports") {
+        // Fetch reports
+        const snapshot = await get(ref(db, resource));
+        let reports = convertSnapshotToArray(snapshot);
+
+        // Fix typo in each report's reporterId field if needed
+        reports = reports.map((report) => {
+          // If the typo field exists, rename it
+          if (report.repporterId && !report.reporterId) {
+            report.reporterId = report.repporterId;
+            delete report.repporterId;
+          }
+          return report;
+        });
+
+        // Fetch all userInfo
+        const userSnapshot = await get(ref(db, "userInfo"));
+        const users = userSnapshot.val() || {};
+
+        // Merge reporterUsername and include reporterId explicitly
+        reports = reports.map((report) => {
+          const reporter = users[report.reporterId];
+          return {
+            ...report,
+            reporterId: report.reporterId,
+            reporterUsername: reporter ? reporter.username : "Unknown",
+          };
+        });
+
+        // Apply pagination and sorting
+        return paginateAndSort(reports, params);
+      }
+
+      // Default behavior for other resources
       const snapshot = await get(ref(db, resource));
       let data = convertSnapshotToArray(snapshot);
 
@@ -55,34 +89,63 @@ const dataProvider = {
         }
 
         if (resource === "posts") {
-          if (params.filter.title) {
-            const titleFilter = params.filter.title.toLowerCase();
-            data = data.filter((item) =>
-              String(item.title || "")
-                .toLowerCase()
-                .includes(titleFilter)
-            );
+          // Fetch posts
+          const snapshot = await get(ref(db, resource));
+          let posts = convertSnapshotToArray(snapshot);
+
+          // Fetch all userInfo
+          const userSnapshot = await get(ref(db, "userInfo"));
+          const users = userSnapshot.val() || {};
+
+          // Merge username into each post by matching uid
+          posts = posts.map((post) => {
+            const user = users[post.uid];
+            return {
+              ...post,
+              username: user ? user.username : "Unknown",
+            };
+          });
+
+          // Apply filters
+          if (params.filter) {
+            if (params.filter.title) {
+              const titleFilter = params.filter.title.toLowerCase();
+              posts = posts.filter((item) =>
+                String(item.title || "")
+                  .toLowerCase()
+                  .includes(titleFilter)
+              );
+            }
+
+            if (params.filter.status !== undefined) {
+              posts = posts.filter(
+                (item) => item.status === params.filter.status
+              );
+            }
+
+            if (params.filter.sectionId) {
+              posts = posts.filter(
+                (item) => item.sectionId === params.filter.sectionId
+              );
+            }
+
+            if (params.filter.uid) {
+              const uidFilter = params.filter.uid.toLowerCase();
+              posts = posts.filter((item) =>
+                String(item.uid || "")
+                  .toLowerCase()
+                  .includes(uidFilter)
+              );
+            }
+
+            if (params.filter.publicStatus !== undefined) {
+              posts = posts.filter(
+                (item) => item.publicStatus === params.filter.publicStatus
+              );
+            }
           }
 
-          if (params.filter.status !== undefined) {
-            data = data.filter((item) => item.status === params.filter.status);
-          }
-
-          if (params.filter.sectionId) {
-            data = data.filter(
-              (item) => item.sectionId === params.filter.sectionId
-            );
-          }
-
-          // Add filter for uid (Created by)
-          if (params.filter.uid) {
-            const uidFilter = params.filter.uid.toLowerCase();
-            data = data.filter((item) =>
-              String(item.uid || "")
-                .toLowerCase()
-                .includes(uidFilter)
-            );
-          }
+          return paginateAndSort(posts, params);
         }
       }
 
@@ -109,7 +172,6 @@ const dataProvider = {
     }
   },
 
-
   create: async (resource, { data }) => {
     try {
       const id = data.id || Date.now().toString();
@@ -119,9 +181,8 @@ const dataProvider = {
           const filePath = `profile_photos/${id}_${Date.now()}.jpg`;
           const file = data.photoUrl.rawFile;
 
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("ZentalApp")
-            .upload(filePath, file);
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage.from("ZentalApp").upload(filePath, file);
 
           if (uploadError) {
             console.error("Upload error:", uploadError.message);
@@ -162,12 +223,13 @@ const dataProvider = {
       const imageField = resource === "posts" ? "imageUri" : "photoUrl";
       if (data[imageField] && data[imageField].rawFile) {
         try {
-          const filePath = `${resource === "posts" ? "post_images" : "profile_photos"}/${id}_${Date.now()}.jpg`;
+          const filePath = `${
+            resource === "posts" ? "post_images" : "profile_photos"
+          }/${id}_${Date.now()}.jpg`;
           const file = data[imageField].rawFile;
 
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("ZentalApp")
-            .upload(filePath, file);
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage.from("ZentalApp").upload(filePath, file);
 
           if (uploadError) {
             console.error("Upload error:", uploadError.message);
@@ -210,7 +272,6 @@ const dataProvider = {
       throw new Error(`Failed to update ${resource}: ${error.message}`);
     }
   },
-
 
   delete: async (resource, { id }) => {
     try {

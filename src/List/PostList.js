@@ -16,7 +16,12 @@ import {
 // Custom filter component for the list
 const PostFilter = (props) => (
   <Filter {...props}>
-    <TextInput label="Search" source="q" placeholder="Search by uid, title" alwaysOn />
+    <TextInput
+      label="Search"
+      source="q"
+      placeholder="Search by uid, title"
+      alwaysOn
+    />
     <TextInput label="Created by (UID)" source="uid" />
     <SelectInput
       label="Status"
@@ -38,6 +43,14 @@ const PostFilter = (props) => (
         { id: "s6", name: "S6" },
       ]}
     />
+    <SelectInput
+      label="Public Status"
+      source="publicStatus"
+      choices={[
+        { id: 1, name: "Public" },
+        { id: 0, name: "Private" },
+      ]}
+    />
   </Filter>
 );
 
@@ -57,20 +70,34 @@ const PostList = (props) => {
         />
         <TextField source="sectionId" label="Section ID" sortable={true} />
         <DateField source="createdAt" label="Created At" sortable={true} />
-        <DateField source="updatedAt" label="Updated At" sortable={true} />
-        <TextField source="uid" label="Created by" sortable={false} />
+        {/* Removed Updated At column */}
+        <FunctionField
+          label="Created by"
+          render={(record) => {
+            const username = record.username || "Unknown";
+            return `${record.uid} (${username})`;
+          }}
+        />
         <FunctionField
           source="status"
           label="Status"
           sortable={true}
           render={(record) => (record.status === 1 ? "Done" : "Todo")}
         />
+        <FunctionField
+          source="publicStatus"
+          label="Public Status"
+          sortable={true}
+          render={(record) =>
+            record.publicStatus === 1 ? "Public" : "Private"
+          }
+        />
         <ImageField
           source="imageUri"
           title="Image"
           label="Image"
           sx={{
-            "& img": { maxWidth: 150, maxHeight: 150, objectFit: "contain" }, // Increased size
+            "& img": { maxWidth: 150, maxHeight: 150, objectFit: "contain" },
           }}
         />
         <EditButton />
