@@ -6,6 +6,7 @@ import PostList from "./List/PostList";
 import ReportList from "./List/ReportList";
 import UserinfoEdit from "./Edit/UserinfoEdit";
 import PostEdit from "./Edit/PostEdit";
+import ReportEdit from "./Edit/ReportEdit";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Resource
         name="reports"
         list={ReportList}
+        edit={ReportEdit}
         options={{ label: "Reports" }}
       />
     </Admin>

@@ -18,7 +18,6 @@ const dataProvider = {
 
         // Fix typo in each report's reporterId field if needed
         reports = reports.map((report) => {
-          // If the typo field exists, rename it
           if (report.repporterId && !report.reporterId) {
             report.reporterId = report.repporterId;
             delete report.repporterId;
@@ -30,15 +29,35 @@ const dataProvider = {
         const userSnapshot = await get(ref(db, "userInfo"));
         const users = userSnapshot.val() || {};
 
+        // Fetch all posts
+        const postSnapshot = await get(ref(db, "posts"));
+        const posts = postSnapshot.val() || {};
+
         // Merge reporterUsername and include reporterId explicitly
         reports = reports.map((report) => {
           const reporter = users[report.reporterId];
+          const post = posts[report.postId];
           return {
             ...report,
             reporterId: report.reporterId,
             reporterUsername: reporter ? reporter.username : "Unknown",
+            postContent: post ? post.content : "No content",
+            postImageUri: post ? post.imageUri : null,
           };
         });
+
+        // Apply filters
+        if (params.filter) {
+          if (params.filter.isViewed !== undefined) {
+            const isViewedFilter =
+              params.filter.isViewed === true ||
+              params.filter.isViewed === "true";
+
+            reports = reports.filter(
+              (report) => !!report.isViewed === isViewedFilter
+            );
+          }
+        }
 
         // Apply pagination and sorting
         return paginateAndSort(reports, params);
@@ -159,11 +178,35 @@ const dataProvider = {
   getOne: async (resource, { id }) => {
     try {
       const snapshot = await get(ref(db, `${resource}/${id}`));
-      const data = { id, ...snapshot.val() };
+      let data = { id, ...snapshot.val() };
+
+      // Fix typo if needed
+      if (resource === "reports") {
+        if (data.repporterId && !data.reporterId) {
+          data.reporterId = data.repporterId;
+          delete data.repporterId;
+        }
+
+        // Fetch related user info and post info
+        const userSnapshot = await get(ref(db, `userInfo/${data.reporterId}`));
+        const postSnapshot = await get(ref(db, `posts/${data.postId}`));
+
+        const reporter = userSnapshot.val() || {};
+        const post = postSnapshot.val() || {};
+
+        data = {
+          ...data,
+          reporterUsername: reporter.username || "Unknown",
+          postContent: post.content || "No content",
+          postImageUri: post.imageUri || null,
+        };
+      }
+
       // Set default value if sectionId is missing or null
       if (data.sectionId === undefined || data.sectionId === null) {
-        data.sectionId = ""; // or some default value
+        data.sectionId = "";
       }
+
       console.log(`getOne(${resource}, ${id}) data:`, data);
       return { data };
     } catch (error) {
