@@ -1,6 +1,7 @@
-// src/App.js
 import { Admin, Resource } from "react-admin";
 import dataProvider from "./dataProvider";
+import authProvider from "./authProvider";
+import LoginPage from "./screens/LoginPage";
 import UserList from "./List/UserList";
 import PostList from "./List/PostList";
 import ReportList from "./List/ReportList";
@@ -10,7 +11,11 @@ import ReportEdit from "./Edit/ReportEdit";
 
 function App() {
   return (
-    <Admin dataProvider={dataProvider}>
+    <Admin
+      dataProvider={dataProvider}
+      authProvider={authProvider} // Thêm dòng này
+      loginPage={LoginPage} // Thêm dòng này
+    >
       <Resource
         name="userInfo"
         list={UserList}
