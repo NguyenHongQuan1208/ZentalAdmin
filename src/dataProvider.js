@@ -108,15 +108,13 @@ const dataProvider = {
         }
 
         if (resource === "posts") {
-          // Fetch posts
+          // Fetch posts and users as before
           const snapshot = await get(ref(db, resource));
           let posts = convertSnapshotToArray(snapshot);
 
-          // Fetch all userInfo
           const userSnapshot = await get(ref(db, "userInfo"));
           const users = userSnapshot.val() || {};
 
-          // Merge username into each post by matching uid
           posts = posts.map((post) => {
             const user = users[post.uid];
             return {
@@ -127,6 +125,9 @@ const dataProvider = {
 
           // Apply filters
           if (params.filter) {
+            if (params.filter.postId) {
+              posts = posts.filter((item) => item.id === params.filter.postId);
+            }
             if (params.filter.title) {
               const titleFilter = params.filter.title.toLowerCase();
               posts = posts.filter((item) =>
@@ -135,19 +136,16 @@ const dataProvider = {
                   .includes(titleFilter)
               );
             }
-
             if (params.filter.status !== undefined) {
               posts = posts.filter(
                 (item) => item.status === params.filter.status
               );
             }
-
             if (params.filter.sectionId) {
               posts = posts.filter(
                 (item) => item.sectionId === params.filter.sectionId
               );
             }
-
             if (params.filter.uid) {
               const uidFilter = params.filter.uid.toLowerCase();
               posts = posts.filter((item) =>
@@ -156,7 +154,6 @@ const dataProvider = {
                   .includes(uidFilter)
               );
             }
-
             if (params.filter.publicStatus !== undefined) {
               posts = posts.filter(
                 (item) => item.publicStatus === params.filter.publicStatus

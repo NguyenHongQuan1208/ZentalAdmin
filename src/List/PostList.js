@@ -16,12 +16,7 @@ import {
 // Custom filter component for the list
 const PostFilter = (props) => (
   <Filter {...props}>
-    <TextInput
-      label="Search"
-      source="q"
-      placeholder="Search by uid, title"
-      alwaysOn
-    />
+    <TextInput label="Post ID" source="postId" alwaysOn />
     <TextInput label="Created by (UID)" source="uid" />
     <SelectInput
       label="Status"
